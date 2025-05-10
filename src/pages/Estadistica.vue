@@ -33,10 +33,11 @@
         que te hacen sentir bien y recuerda tomar pequeños descansos."
       </p>
     </div>
+
   </div>
 </template>
   
-  <script setup>
+<script setup>
 const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 </script>
   
