@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card variant="elevated" class="mx-auto pa-4 mb-2">
+    <v-card variant="flat" style="border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);" class="mx-auto pa-4 mb-2">
       <v-row>
         <v-card-title><v-avatar color="green"><v-icon icon="mdi-emoticon-happy-outline"></v-icon></v-avatar></v-card-title>
         <v-col>
