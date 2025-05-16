@@ -18,21 +18,21 @@
         <v-text-field
           :rules="[required]"
           prepend-inner-icon="mdi-account"
-          v-model="LoginData.User"
-          label="Usuario"
+          v-model="LoginData.email"
+          label="Email"
           class="mb-4"
         ></v-text-field>
 
         <v-text-field
           :rules="[required]"
           label="Contraseña"
-          v-model="LoginData.Password"
+          v-model="LoginData.password"
           prepend-inner-icon="mdi-lock"
           type="password"
           class="mb-4"
         ></v-text-field>
 
-        <v-btn color="#BA68C8" block class="mb-2" :disabled="!login">Ingresar</v-btn>
+        <v-btn color="#BA68C8" block class="mb-2" @click="loginUser()" :disabled="!login">Ingresar</v-btn>
 
         <v-btn color="#8E24AA" to="/Register" block variant="outlined">Registrarse</v-btn>
       </v-card-item>
@@ -43,12 +43,16 @@
 
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import axios from 'axios'
+import { computed, reactive, ref, toRaw } from 'vue'
+import { useRouter } from 'vue-router'
 
+const BASEURL =  "http://localhost:5070/api/"
+const router =  useRouter();
 
 let LoginData = reactive({
-  User: "",
-  Password:"",
+  email: "",
+  password:"",
 })
   
 
@@ -61,7 +65,25 @@ const required = (v) =>{
 const login = computed(() => {
   return LoginData.User !== "" && LoginData.Password !== ""
 })
-        
+
+
+const loginUser =  async () =>  {
+  try{
+
+    const response =  await axios.post(`${BASEURL}User/Login`,toRaw(LoginData))
+
+    if(response.status !=200){
+      alert("Error al iniciar sesión")  
+      return;
+    }
+    console.log("datos: "+JSON.stringify(response.data.result))
+    localStorage.setItem("access_token", response.data.result) 
+    router.push("/Diario")
+
+  }catch(error){
+      console.log(error)
+  }
+}
  
 </script>
 

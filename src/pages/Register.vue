@@ -18,7 +18,7 @@
         <v-text-field
           :rules="[required]"
           prepend-inner-icon="mdi-account"
-          v-model="RegisterData.Name"
+          v-model="RegisterData.nombre"
           label="Nombre"
           class="mb-4"
         ></v-text-field>
@@ -26,30 +26,31 @@
              <v-text-field
           :rules="[required]"
           prepend-inner-icon="mdi-account"
-          v-model="RegisterData.LastName"
+          v-model="RegisterData.apellido"
           label="Apellido"
           class="mb-4"
         ></v-text-field>
         
-             <v-text-field
+          <v-text-field
           :rules="[required]"
           prepend-inner-icon="mdi-account"
-          v-model="RegisterData.User"
-          label="Usuario"
+          v-model="RegisterData.email"
+          label="Email"
           class="mb-4"
+          type="email"
         ></v-text-field>
 
         <v-text-field
           :rules="[required]"
           label="Contraseña"
-          v-model="RegisterData.Password"
+          v-model="RegisterData.password"
           prepend-inner-icon="mdi-lock"
           type="password"
           class="mb-4"
         ></v-text-field>
 
           <v-text-field
-          :rules="[required , (v) => v == RegisterData.Password || 'Contraseña no coincide']"
+          :rules="[required , (v) => v == RegisterData.password || 'Contraseña no coincide']"
           :v-model="confirmContra"
           label="Confirmar contraseña"
           prepend-inner-icon="mdi-lock"
@@ -57,7 +58,7 @@
           class="mb-4"
         ></v-text-field>
 
-        <v-btn color="#BA68C8" block class="mb-2" :disabled="!login">Registrarse</v-btn>
+        <v-btn color="#BA68C8" block class="mb-2" :disabled="!login" @click="registerUser()">Registrarse</v-btn>
 
        
       </v-card-item>
@@ -68,14 +69,17 @@
 
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
-
+import axios from 'axios'
+import { computed, reactive, ref, toRaw } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter();
 let confirmContra = ref("")
+const BASEURL =  "http://localhost:5070/api/"
 let RegisterData = reactive({
-  User: "",
-  Password:"",
-  Name:"",
-  LastName:"",  
+  nombre: "",
+  apellido:"",
+  email:"",
+  password:"",  
 
 })
   
@@ -89,7 +93,22 @@ const required = (v) =>{
 const login = computed(() => {
   return (RegisterData.User !== "" && RegisterData.Password !== "" && RegisterData.Name !== "" && RegisterData.LastName !== "" )
 })
-        
+
+const registerUser = async () =>  {
+  try { 
+      const response = await axios.post(`${BASEURL}User/register`,toRaw(RegisterData))
+
+      if(response.status !=200){
+        console.log("No se pudo registrar el usuario")  
+        return;
+      }
+
+      console.log("datos: "+JSON.stringify(response.data))
+      router.push("/Login")
+  }catch(error){
+    console.log(error.response.data)  
+  }
+}
  
 </script>
 

@@ -2,9 +2,10 @@
   <div class="diario-container">
     <header class="diario-header">
       <v-btn variant="text"><v-icon icon="mdi-arrow-left"></v-icon></v-btn>
-      <h1>Mi diario</h1>
+      <h1>Mi diario, {{ nombreUser }}</h1>
 
       <v-btn
+      @click="diarioEntrada()"
         class="me-2 text-none"
         prepend-icon="mdi-content-save"
         variant="outlined"
@@ -17,7 +18,7 @@
     <div class="card entrada">
       <v-textarea
         placeholder="¿Cómo te sientes hoy? Escribe libremente tus pensamientos y emociones..."
-        v-model="texto"
+        v-model="Descripcion"
         :counter="200"
       ></v-textarea>
     </div>
@@ -28,11 +29,13 @@
         <span
           v-for="(etiqueta, index) in etiquetas"
           :key="index"
-          :class="{ activa: etiquetaSeleccionada.includes(etiqueta) }"
-          @click="toggleEtiqueta(etiqueta)"
+          :class="{ activa: etiquetaSeleccionada === etiqueta }"
+          @click="etiquetaSeleccionada = etiqueta"
         >
           {{ etiqueta }}
         </span>
+           {{ etiquetaSeleccionada }}
+        
       </div>
     </div>
 
@@ -42,20 +45,39 @@
         <span
           v-for="(emoji, index) in emojis"
           :key="index"
-          :class="{ seleccionado: emocionSeleccionada === emoji }"
-          @click="emocionSeleccionada = emoji"
+          :class="{ seleccionado: emocionSeleccionada === emoji.estado }"
+          @click="emocionSeleccionada = emoji.estado"
         >
-          {{ emoji }}
+          {{ emoji.emoji }}
         </span>
+           {{ emocionSeleccionada }}
+
       </div>
     </div>
   </div>
 </template>
   
   <script setup>
-import { ref } from "vue";
+import axios from "axios";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, toRaw, toRef } from "vue";
+import { useRouter } from "vue-router";
 
-const texto = ref("");
+const emocionSeleccionada = ref("");
+const etiquetaSeleccionada = ref("");
+const Descripcion = ref("");
+
+const nombreUser = ref("");
+
+console.log(emocionSeleccionada.value)
+
+const datosAEnviar = computed(() => ({
+  EstadoAnimo: emocionSeleccionada.value,
+  Descripcion: Descripcion.value, // O otro campo reactivo si lo tienes
+  Etiquetas: etiquetaSeleccionada.value,
+}));
+const router = useRouter();
+
+
 const etiquetas = [
   "Trabajo",
   "Familia",
@@ -64,19 +86,104 @@ const etiquetas = [
   "Descanso",
   "Logro",
 ];
-const etiquetaSeleccionada = ref([]);
+const BASEURL = "http://localhost:5070/api/"
 
-const toggleEtiqueta = (etiqueta) => {
-  const index = etiquetaSeleccionada.value.indexOf(etiqueta);
-  if (index >= 0) {
-    etiquetaSeleccionada.value.splice(index, 1);
-  } else {
-    etiquetaSeleccionada.value.push(etiqueta);
+// const toggleEtiqueta = (etiqueta) => {
+//   const index = etiquetaSeleccionada.value.indexOf(etiqueta);
+//   if (index >= 0) {
+//     etiquetaSeleccionada.value.splice(index, 1);
+//   } else {
+//     etiquetaSeleccionada.value.push(etiqueta);
+//   }
+// };
+
+const emojis = [
+  {
+    emoji: "😊",
+    estado: "Feliz"    
+  },
+   {
+    emoji: "🙂",
+    estado: "Neutro"    
+  },
+   {
+    emoji:"😴",
+    estado: "Cansado"    
+  },
+   {
+    emoji: "😲",
+    estado: "Asombrado"    
+  },
+    {
+    emoji: "😨",
+    estado: "Asustado"    
+  },
+   {
+    emoji: "😞",
+    estado: "Triste"    
+  },
+];
+
+const getMe = async () => {
+  try{
+       let access_token = localStorage.getItem("access_token");
+
+  const response =  await axios.get(`${BASEURL}User/me`,{
+    headers: { Authorization: `Bearer ${access_token}` } 
+  })
+
+  if(response.status !=200){
+    return;
   }
-};
 
-const emojis = ["😊", "🙂", "😴", "😲", "😨"];
-const emocionSeleccionada = ref("");
+  console.log("datos del usuario: ",JSON.stringify(response.data.usuario.nombre))
+  nombreUser.value = response.data.usuario.nombre
+}catch (error){
+    console.error(error.response.data);
+    router.push("/Login")
+
+  }
+}
+ 
+
+
+const diarioEntrada =  async () =>  {
+  let access_token = localStorage.getItem("access_token");
+  console.log(access_token)
+  //  if (!emocionSeleccionada.value) {
+  //   alert("Por favor, selecciona un estado de ánimo");
+  //   return;
+  // }
+
+  // if (!etiquetaSeleccionada.value) {
+  //   alert("Por favor, selecciona una etiqueta de ánimo");
+  //   return;
+  // }
+  try{
+
+    const response =  await axios.post(`${BASEURL}DiarioEntrada/entrada`,datosAEnviar.value,{
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
+
+    if(response.status !=200){
+      alert("No se pudo guardar la informacion")  
+      router.push("/login")
+      return;
+    }
+    console.log("datos: "+JSON.stringify(response.data.result))
+    localStorage.setItem("Access_token", response.data.result) 
+    
+
+  }catch(error){
+      console.log(error)
+  }
+}
+
+onMounted(()=>{
+  getMe();
+})
+
+
 </script>
   
   <style scoped>

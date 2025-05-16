@@ -38,7 +38,39 @@
 </template>
   
 <script setup>
+import axios from 'axios';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const BASEURL = "http://localhost:5070/api/"
+
+const  router = useRouter();
 const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+
+const getMe = async () => {
+  try{
+       let access_token = localStorage.getItem("access_token");
+
+  const response =  await axios.get(`${BASEURL}User/me`,{
+    headers: { Authorization: `Bearer ${access_token}` } 
+  })
+
+  if(response.status !=200){
+    return;
+  }
+
+  return response.status
+
+}catch (error){
+    console.error(error.response.data);
+    router.push("/Login")
+
+  }
+}
+onMounted(()=>{
+  getMe() 
+})
 </script>
   
   <style scoped>

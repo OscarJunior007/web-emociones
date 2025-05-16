@@ -23,8 +23,35 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 const contenedor = ref(null)
+
+const  router = useRouter();
+
+const BASEURL = "http://localhost:5070/api/"
+const getMe = async () => {
+  try{
+       let access_token = localStorage.getItem("access_token");
+
+  const response =  await axios.get(`${BASEURL}User/me`,{
+    headers: { Authorization: `Bearer ${access_token}` } 
+  })
+
+  if(response.status !=200){
+    return;
+  }
+
+  return response.status
+
+}catch (error){
+    console.error(error.response.data);
+    router.push("/Login")
+
+  }
+}
+
 
   const actividades = ref([
       {
@@ -78,6 +105,9 @@ const contenedor = ref(null)
   ])
 
 onMounted(() => {
+
+  getMe();
+
   const actividadesElements = contenedor.value.querySelectorAll('.actividad')
   const titulo = contenedor.value.querySelector('h1')
   const subtitulo = contenedor.value.querySelector('.subtitulo')
