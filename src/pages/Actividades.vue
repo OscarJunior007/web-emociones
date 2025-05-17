@@ -47,7 +47,8 @@ const getMe = async () => {
 
 }catch (error){
     console.error(error.response.data);
-    router.push("/Login")
+        router.push("/")
+
 
   }
 }

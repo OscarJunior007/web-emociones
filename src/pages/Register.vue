@@ -59,6 +59,8 @@
         ></v-text-field>
 
         <v-btn color="#BA68C8" block class="mb-2" :disabled="!login" @click="registerUser()">Registrarse</v-btn>
+        <v-btn color="#BA68C8" variant="outlined" block class="mb-2" to="/">Login</v-btn>
+
 
        
       </v-card-item>
@@ -91,7 +93,7 @@ const required = (v) =>{
 }  
 
 const login = computed(() => {
-  return (RegisterData.User !== "" && RegisterData.Password !== "" && RegisterData.Name !== "" && RegisterData.LastName !== "" )
+  return (RegisterData.nombre !== "" && RegisterData.apellido !== "" && RegisterData.email !== "" && RegisterData.password !== "" )
 })
 
 const registerUser = async () =>  {
@@ -104,7 +106,7 @@ const registerUser = async () =>  {
       }
 
       console.log("datos: "+JSON.stringify(response.data))
-      router.push("/Login")
+      router.push("/")
   }catch(error){
     console.log(error.response.data)  
   }

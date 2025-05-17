@@ -64,7 +64,8 @@ const getMe = async () => {
 
 }catch (error){
     console.error(error.response.data);
-    router.push("/Login")
+        router.push("/")
+
 
   }
 }
@@ -78,8 +79,8 @@ onMounted(()=>{
   padding: 2rem 1rem;
   max-width: 600px;
   margin: 0 auto;
-  min-height: 100vh;
-  box-sizing: border-box;
+ 
+  
 }
 
 .titulo {
