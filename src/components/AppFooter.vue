@@ -54,7 +54,7 @@
           </v-btn>
         </v-col>
 
-        <v-col
+        <!-- <v-col
           cols="6"
           sm="3"
           class="d-flex flex-column align-center nav-btn"
@@ -65,7 +65,7 @@
               <span color="red">Logout</span>
             </div>
           </v-btn>
-        </v-col>
+        </v-col> -->
       </v-row>
     </v-container>
   </v-footer>

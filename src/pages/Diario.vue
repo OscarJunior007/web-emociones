@@ -8,9 +8,9 @@
     ></AlertComponent>
     <div class="diario-container">
       <header class="diario-header">
-        <v-btn disabled variant="text"
+        <v-btn color="red" @click="eliminarStorage()"  variant="text"
           ><v-icon icon="mdi-arrow-left"></v-icon
-        ></v-btn>
+        > Logout </v-btn>
         <h1>Mi diario, {{ nombreUser }}</h1>
 
         <v-btn
@@ -161,6 +161,13 @@ const datos = computed(() => {
     etiquetaSeleccionada.value !== "" 
   );
 });
+
+
+function eliminarStorage(){
+  localStorage.clear(); 
+  router.push('/')  
+
+}
 
 const router = useRouter();
 

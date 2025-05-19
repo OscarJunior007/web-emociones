@@ -55,9 +55,9 @@
                 <p style="font-size: 17px">
                   {{ entrada.fechaHora.split("T")[0] }}
                 </p>
-                <v-btn variant="text">
+                <!-- <v-btn variant="text">
                   <v-icon icon="mdi-pencil" />
-                </v-btn>
+                </v-btn> -->
               </v-row>
             </v-col>
 
