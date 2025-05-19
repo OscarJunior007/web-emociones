@@ -53,10 +53,34 @@
             </div>
           </v-btn>
         </v-col>
+
+        <v-col
+          cols="6"
+          sm="3"
+          class="d-flex flex-column align-center nav-btn"
+        >
+          <v-btn @click="eliminarStorage()" variant="text" active-class="selected" class="w-100">
+            <div class="d-flex flex-column align-center w-100">
+              <v-icon color="red" class="nav-icon">mdi-logout</v-icon>
+              <span color="red">Logout</span>
+            </div>
+          </v-btn>
+        </v-col>
       </v-row>
     </v-container>
   </v-footer>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router';
+
+const router =  useRouter();
+function eliminarStorage(){
+  localStorage.clear(); 
+  router.push('/')  
+
+}
+</script>
 
 <style scoped>
 .nav-btn {

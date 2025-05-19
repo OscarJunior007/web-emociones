@@ -32,10 +32,25 @@
           class="mb-4"
         ></v-text-field>
 
-        <v-btn color="#BA68C8" block class="mb-2" @click="loginUser()" :disabled="!login">Ingresar</v-btn>
+        <v-btn
+          color="#BA68C8"
+          block
+          class="mb-2"
+          @click="loginUser()"
+          :disabled="!login"
+          >Ingresar</v-btn
+        >
 
-        <v-btn color="#8E24AA" to="/Register" block variant="outlined">Registrarse</v-btn>
+        <v-btn color="#8E24AA" to="/Register" block variant="outlined"
+          >Registrarse</v-btn
+        >
       </v-card-item>
+      <AlertComponent
+        :type="typeAlert"
+        :text="messageAlert"
+        :title="titleAlert"
+        v-show="alertVisible"
+      ></AlertComponent>
     </v-card>
   </v-container>
 </template>
@@ -43,48 +58,56 @@
 
 
 <script setup>
-import axios from 'axios'
-import { computed, reactive, ref, toRaw } from 'vue'
-import { useRouter } from 'vue-router'
+import AlertComponent from "@/components/AlertComponent.vue";
+import axios from "axios";
+import { computed, reactive, ref, toRaw } from "vue";
+import { useRouter } from "vue-router";
 
-const BASEURL =  "http://localhost:5070/api/"
-const router =  useRouter();
+const BASEURL = "http://localhost:5070/api/";
+const router = useRouter();
 
 let LoginData = reactive({
   email: "",
-  password:"",
-})
-  
+  password: "",
+});
 
+const alertVisible = ref(false);
+let messageAlert = ref("");
+let typeAlert = ref("");
+let titleAlert = ref("");
 
-
-const required = (v) =>{
-  return !!v || 'Campo requerido'
-}  
+const required = (v) => {
+  return !!v || "Campo requerido";
+};
 
 const login = computed(() => {
-  return LoginData.User !== "" && LoginData.Password !== ""
-})
+  return LoginData.User !== "" && LoginData.Password !== "";
+});
 
+const loginUser = async () => {
+  try {
+    const response = await axios.post(`${BASEURL}User/Login`, toRaw(LoginData));
 
-const loginUser =  async () =>  {
-  try{
-
-    const response =  await axios.post(`${BASEURL}User/Login`,toRaw(LoginData))
-
-    if(response.status !=200){
-      alert("Error al iniciar sesión")  
+    if (response.status != 200) {
+      alert("Error al iniciar sesión");
       return;
     }
-    console.log("datos: "+JSON.stringify(response.data.result))
-    localStorage.setItem("access_token", response.data.result) 
-    router.push("/Diario")
+    console.log("datos: " + JSON.stringify(response.data.result));
+    localStorage.setItem("access_token", response.data.result);
+    router.push("/Diario");
+  } catch (error) {
+    console.log(error);
+    alertVisible.value = !alertVisible.value;
+    messageAlert.value = "Usuario o contraseña incorrectas";
+    typeAlert.value = "error";
+    titleAlert.value = "Credenciales invalidas";
+    setTimeout(() => {
+      console.log("Se ejecutó el setTimeout");
 
-  }catch(error){
-      console.log(error)
+      alertVisible.value = !alertVisible.value;
+    }, 2000);
   }
-}
- 
+};
 </script>
 
 <style>

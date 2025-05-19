@@ -64,54 +64,72 @@
 
        
       </v-card-item>
+       <AlertComponent :v-show="alertVisible" :text="messageAlert" :type="typeAlert" :title="titleAlert"></AlertComponent>
     </v-card>
+   
   </v-container>
 </template>
 
 
 
 <script setup>
-import axios from 'axios'
-import { computed, reactive, ref, toRaw } from 'vue'
-import { useRouter } from 'vue-router'
+import axios from "axios";
+import { computed, reactive, ref, toRaw } from "vue";
+import { useRouter } from "vue-router";
 const router = useRouter();
-let confirmContra = ref("")
-const BASEURL =  "http://localhost:5070/api/"
+let confirmContra = ref("");
+const BASEURL = "http://localhost:5070/api/";
 let RegisterData = reactive({
   nombre: "",
-  apellido:"",
-  email:"",
-  password:"",  
+  apellido: "",
+  email: "",
+  password: "",
+});
 
-})
-  
+const alertVisible = ref(false);
+let messageAlert = ref("");
+let typeAlert = ref("");
+let titleAlert = ref("");
 
-
-
-const required = (v) =>{
-  return !!v || 'Campo requerido'
-}  
+const required = (v) => {
+  return !!v || "Campo requerido";
+};
 
 const login = computed(() => {
-  return (RegisterData.nombre !== "" && RegisterData.apellido !== "" && RegisterData.email !== "" && RegisterData.password !== "" )
-})
+  return (
+    RegisterData.nombre !== "" &&
+    RegisterData.apellido !== "" &&
+    RegisterData.email !== "" &&
+    RegisterData.password !== ""
+  );
+});
 
-const registerUser = async () =>  {
-  try { 
-      const response = await axios.post(`${BASEURL}User/register`,toRaw(RegisterData))
+const registerUser = async () => {
+  try {
+    const response = await axios.post(
+      `${BASEURL}User/register`,
+      toRaw(RegisterData)
+    );
 
-      if(response.status !=200){
-        console.log("No se pudo registrar el usuario")  
-        return;
-      }
+    if (response.status != 200) {
+      console.log("No se pudo registrar el usuario");
+      return;
+    }
 
-      console.log("datos: "+JSON.stringify(response.data))
-      router.push("/")
-  }catch(error){
-    console.log(error.response.data)  
+    console.log("datos: " + JSON.stringify(response.data));
+    messageAlert.value = "Usuario creado con exito!";
+    typeAlert.value = "success";
+    titleAlert.value = "exito!";
+    alertVisible.value = true;
+    setTimeout(() => {
+      console.log("Se ejecutó el setTimeout");
+
+      router.push("/");
+    }, 2000);
+  } catch (error) {
+    console.log(error.response.data);
   }
-}
- 
+};
 </script>
 
 <style>

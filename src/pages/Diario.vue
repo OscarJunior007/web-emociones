@@ -1,5 +1,11 @@
 <template>
   <v-container>
+    <AlertComponent
+      :type="typeAlert"
+      :text="messageAlert"
+      :title="titleAlert"
+      v-show="alertVisible"
+    ></AlertComponent>
     <div class="diario-container">
       <header class="diario-header">
         <v-btn disabled variant="text"
@@ -12,6 +18,7 @@
           class="me-2 text-none"
           prepend-icon="mdi-content-save"
           variant="outlined"
+          :disabled="!datos"
           >Guardar</v-btn
         >
       </header>
@@ -46,46 +53,71 @@
       </div>
 
       <v-container>
-    <v-row justify="center">
-      <v-col cols="12" class="d-flex justify-center">
-        <v-card class="mb-4 card-responsive">
-          <v-card-item>
-            <v-card-title class="mb-0">¿Cómo te sientes?</v-card-title>
+        <v-row justify="center">
+          <v-col cols="12" class="d-flex justify-center">
+            <v-card
+              class="mb-4 card-responsive"
+              style="
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                border-left: 5px solid pink;
+              "
+            >
+              <v-card-item>
+                <v-card-title class="mb-0">¿Cómo te sientes?</v-card-title>
 
-            <div class="emoji-lista d-flex flex-wrap mt-2">
-              <span
-                v-for="(emoji, index) in emojis"
-                :key="index"
-                :class="{ seleccionado: emocionSeleccionada === emoji.estado }"
-                @click="emocionSeleccionada = emoji.estado"
-                class="mr-2 mb-2"
-                style="font-size: 24px; cursor: pointer;"
-              >
-                {{ emoji.emoji }}
-              </span>
-            </div>
-          </v-card-item>
-        </v-card>
-      </v-col>
+                <div class="emoji-lista d-flex flex-wrap mt-2">
+                  <span
+                    v-for="(emoji, index) in emojis"
+                    :key="index"
+                    :class="{
+                      seleccionado: emocionSeleccionada === emoji.estado,
+                    }"
+                    @click="emocionSeleccionada = emoji.estado"
+                    class="mr-2 mb-2"
+                    style="font-size: 24px; cursor: pointer"
+                  >
+                    {{ emoji.emoji }}
+                  </span>
+                </div>
+              </v-card-item>
+            </v-card>
+          </v-col>
 
-      <v-col cols="12" class="d-flex justify-center">
-        <v-card class="card-responsive">
-          <v-card-title>Entradas recientes</v-card-title>
+          <v-col cols="12" class="d-flex justify-center">
+            <v-card
+              style="
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                border-left: 5px solid pink;
+              "
+              class="card-responsive"
+            >
+              <div v-if="entradasRecientes == null">
+                <v-card-title>Aun no tienes entradas.</v-card-title>
+              </div>
+              <div v-else>
+                <v-card-title
+                  >Entradas recientes
+                  {{ entradasRecientes.length }}</v-card-title
+                >
 
-          <v-card-text>
-            <v-row class="align-center">
-              <v-col cols="8">
-                <span>ayer fue un día bueno...</span>
-              </v-col>
-              <v-col cols="4" class="text-right">
-                <p>12-25-03</p>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+                <v-card-text
+                  v-for="(entrada, index) in entradasRecientes"
+                  :key="index"
+                >
+                  <v-row class="align-center">
+                    <v-col cols="8">
+                      <span>{{ entrada.descripcion }}</span>
+                    </v-col>
+                    <v-col cols="4" class="text-right">
+                      <p>{{ entrada.fechaHora.split("T")[0] }}</p>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
     </div>
   </v-container>
 </template>
@@ -107,6 +139,11 @@ const emocionSeleccionada = ref("");
 const etiquetaSeleccionada = ref("");
 const Descripcion = ref("");
 
+const alertVisible = ref(false);
+let messageAlert = ref("");
+let typeAlert = ref("");
+let titleAlert = ref("");
+let entradasRecientes = ref(null);
 const nombreUser = ref("");
 
 console.log(emocionSeleccionada.value);
@@ -116,6 +153,15 @@ const datosAEnviar = computed(() => ({
   Descripcion: Descripcion.value,
   Etiquetas: etiquetaSeleccionada.value,
 }));
+
+const datos = computed(() => {
+  return (
+    emocionSeleccionada.value !== "" &&
+    Descripcion.value !== "" &&
+    etiquetaSeleccionada.value !== "" 
+  );
+});
+
 const router = useRouter();
 
 const etiquetas = [
@@ -184,6 +230,29 @@ const getMe = async () => {
   }
 };
 
+const getDiariosRecientes = async () => {
+  let access_token = localStorage.getItem("access_token");
+  console.log("TOKEN DE DIARIOS RECIENTES: ", access_token);
+  try {
+    const response = await axios.get(
+      `${BASEURL}DiarioEntrada/diarios/recientes`,
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }
+    );
+
+    if (response.status != 200) {
+      alert("No se pudo extraer nada");
+      return;
+    }
+
+    console.log(response.data);
+    entradasRecientes.value = response.data;
+  } catch (error) {
+    console.log(error.response.status);
+  }
+};
+
 const diarioEntrada = async () => {
   let access_token = localStorage.getItem("access_token");
   console.log(access_token);
@@ -210,10 +279,27 @@ const diarioEntrada = async () => {
       router.push("/login");
       return;
     }
-    console.log("datos: " + JSON.stringify(response.data.result));
-    localStorage.setItem("Access_token", response.data.result);
+
+    messageAlert.value = "Nueva entrada almacenada.";
+    typeAlert.value = "success";
+    titleAlert.value = "Diario actualizado con exito!";
+    alertVisible.value = true;
+    setTimeout(() => {
+      console.log("Se ejecutó el setTimeout");
+
+      alertVisible.value = !alertVisible.value;
+    }, 2000);
   } catch (error) {
-    console.log(error);
+    console.log(error.response.status);
+    messageAlert.value = "Error al guardar la entrada";
+    typeAlert.value = "error";
+    titleAlert.value = "Ocurrio un error";
+    alertVisible.value = true;
+    setTimeout(() => {
+      console.log("Se ejecutó el setTimeout");
+
+      alertVisible.value = !alertVisible.value;
+    }, 2000);
   }
 };
 
@@ -235,6 +321,7 @@ setInterval(actualizarFechaYHora, 1000);
 
 onMounted(() => {
   getMe();
+  getDiariosRecientes();
   actualizarFechaYHora();
 });
 </script>
