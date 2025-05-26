@@ -8,9 +8,9 @@
     ></AlertComponent>
     <div class="diario-container">
       <header class="diario-header">
-        <v-btn color="red" @click="eliminarStorage()"  variant="text"
-          ><v-icon icon="mdi-arrow-left"></v-icon
-        > Logout </v-btn>
+        <v-btn color="red" @click="eliminarStorage()" variant="text"
+          ><v-icon icon="mdi-arrow-left"></v-icon> Logout
+        </v-btn>
         <h1>Mi diario, {{ nombreUser }}</h1>
 
         <v-btn
@@ -126,6 +126,7 @@
 import axios from "axios";
 import {
   computed,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   reactive,
@@ -158,15 +159,13 @@ const datos = computed(() => {
   return (
     emocionSeleccionada.value !== "" &&
     Descripcion.value !== "" &&
-    etiquetaSeleccionada.value !== "" 
+    etiquetaSeleccionada.value !== ""
   );
 });
 
-
-function eliminarStorage(){
-  localStorage.clear(); 
-  router.push('/')  
-
+function eliminarStorage() {
+  localStorage.clear();
+  router.push("/");
 }
 
 const router = useRouter();
@@ -292,10 +291,15 @@ const diarioEntrada = async () => {
     titleAlert.value = "Diario actualizado con exito!";
     alertVisible.value = true;
     setTimeout(() => {
-      console.log("Se ejecutó el setTimeout");
-
       alertVisible.value = !alertVisible.value;
     }, 2000);
+    nextTick(() => {
+      console.log("Se ejecutó el nextTick");
+      Descripcion.value = "";
+      emocionSeleccionada.value = "";
+      etiquetaSeleccionada.value = "";
+      getDiariosRecientes();
+    });
   } catch (error) {
     console.log(error.response.status);
     messageAlert.value = "Error al guardar la entrada";

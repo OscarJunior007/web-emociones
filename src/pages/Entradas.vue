@@ -55,9 +55,14 @@
                 <p style="font-size: 17px">
                   {{ entrada.fechaHora.split("T")[0] }}
                 </p>
-                <!-- <v-btn variant="text">
-                  <v-icon icon="mdi-pencil" />
-                </v-btn> -->
+                <div>
+                  <v-btn @click="verModalCarta(entrada)" variant="text">
+                    <v-icon icon="mdi-pencil" />
+                  </v-btn>
+                  <v-btn color="red" @click="eliminarEntrada(entrada)" variant="text">
+                    <v-icon icon="mdi-delete" />
+                  </v-btn>
+                </div>
               </v-row>
             </v-col>
 
@@ -71,7 +76,6 @@
             <v-col cols="12">
               <div class="d-flex flex-wrap">
                 <v-chip
-                  
                   :key="index"
                   color="green"
                   label
@@ -79,7 +83,7 @@
                   class="ma-1"
                 >
                   <v-icon icon="mdi-check" start />
-                  {{ entrada.etiquetas  }}
+                  {{ entrada.etiquetas }}
                 </v-chip>
               </div>
             </v-col>
@@ -89,6 +93,49 @@
         </v-col>
       </v-row>
     </v-card>
+
+    <v-dialog
+      v-model="verModal"
+      max-width="500px"
+      transition="slide-y-transition"
+      v-show="verModal"
+    >
+      <v-card>
+        <v-card-title class="text-h5">Detalles de la Entrada</v-card-title>
+        <v-card-text>
+          <p>
+            <strong>Fecha:</strong>
+            {{ entradaSeleccionada.fechaHora.split("T")[0] }}
+          </p>
+          <p>
+            <strong>Hora:</strong>
+            {{ formatHora(entradaSeleccionada.fechaHora) }}
+          </p>
+          <p>
+            <strong>Estado de Ánimo:</strong>
+            {{ entradaSeleccionada.estadoAnimo }}
+            {{ entradaSeleccionada.id }}
+          </p>
+          <p>
+            <strong>Editar descripcion: </strong>
+            <v-text-field
+              v-model="entradaSeleccionada.descripcion"
+              placeholder="Escribe aquí tu descripción"
+              rows="4"
+              multiline
+            >
+            </v-text-field>
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="green" @click="editarCarta(entradaSeleccionada)"
+            >Editar</v-btn
+          >
+
+          <v-btn color="primary" @click="verModal = false">Cerrar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -100,6 +147,7 @@ import { format, parseISO } from "date-fns";
 
 const router = useRouter();
 
+const verModal = ref(false);
 
 const BASEURL = "http://localhost:5070/api/";
 const emociones = ref([
@@ -112,8 +160,13 @@ const emociones = ref([
 ]);
 
 const entradas = ref(null);
-
+const entradaSeleccionada = ref(null);
 const tieneEntradas = ref(false);
+
+function verModalCarta(entrada) {
+  entradaSeleccionada.value = { ...entrada };
+  verModal.value = true;
+}
 
 const getMe = async () => {
   try {
@@ -137,6 +190,57 @@ const getMe = async () => {
 const formatHora = (fechaISO) => {
   return format(parseISO(fechaISO), "h:mm a");
 };
+
+const editarCarta = async (entrada) => {
+  try {
+    let access_token = localStorage.getItem("access_token");
+
+    const response = await axios.put(
+      `${BASEURL}DiarioEntrada/actualizar/${entrada.id}`,
+      { descripcion: entrada.descripcion },
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status != 200) {
+      console.log(response.data);
+    }
+    console.log("Entrada actualizada:", response.data);
+    verModal.value = false;
+    nextTick(() => {
+      getEntradas();
+    });
+  } catch (error) {
+    console.error(error.response.data);
+  }
+};
+
+const eliminarEntrada = async (entrada) => {
+  try {
+    let access_token = localStorage.getItem("access_token");
+
+    const response = await axios.delete(
+      `${BASEURL}DiarioEntrada/eliminar/${entrada.id}`,
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }
+    );
+
+    if (response.status != 200) {
+      console.log(response.data);
+    }
+    console.log("Entrada eliminada:", response.data);
+    nextTick(() => {
+      getEntradas();
+    });
+  } catch (error) {
+    console.error(error.response.data);
+  }
+};  
 
 const getEntradas = async () => {
   try {
@@ -165,8 +269,6 @@ onMounted(async () => {
   getMe();
 
   getEntradas();
-
- 
 });
 </script>
 
